@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sipariş Yönetimi — Mes Portal Admin</title>
+{% load static %}
+<link rel="icon" type="image/png" href="{% static 'karsilastirma/mesb2b.png' %}">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap');
+:root{
+  --slate-50:#F8FAFC;--slate-100:#F1F5F9;--slate-200:#E2E8F0;
+  --slate-400:#94A3B8;--slate-600:#475569;--slate-700:#334155;--slate-900:#0F172A;
+  --white:#FFFFFF;--orange:#E85D26;--orange-dark:#C94D1A;
+  --green:#059669;--yellow:#D97706;--red:#DC2626;--blue:#2563EB;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--slate-50);color:var(--slate-900);font-family:'Inter',sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased}
+.header{background:rgba(20,20,24,.97);backdrop-filter:blur(12px);box-shadow:0 1px 0 rgba(255,255,255,.06),0 4px 24px rgba(0,0,0,.35);height:72px;display:flex;align-items:center;padding:0 2rem;position:sticky;top:0;z-index:100}
+.header-inner{max-width:1100px;margin:0 auto;width:100%;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.logo-link{display:flex;align-items:center;gap:.75rem;text-decoration:none}
+.logo-img{width:38px;height:38px;border-radius:9px;object-fit:cover}
+.logo-name{color:#F1F5F9;font-size:1.0625rem;font-weight:700;letter-spacing:-0.02em}
+.nav-links{display:flex;align-items:center;gap:.5rem}
+.nav-link{display:inline-flex;align-items:center;gap:.375rem;color:#94A3B8;font-size:.8125rem;font-weight:500;text-decoration:none;padding:.375rem .75rem;border:1px solid rgba(255,255,255,.08);border-radius:7px;transition:all .2s}
+.nav-link:hover,.nav-link.aktif{color:#F1F5F9;border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.06)}
+.nav-link.aktif{border-color:var(--orange);color:var(--orange)}
+
+/* PAGE */
+.page{max-width:1100px;margin:0 auto;padding:2rem 1.5rem}
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:2rem;flex-wrap:wrap}
+.page-title{font-size:1.375rem;font-weight:700;letter-spacing:-.02em;margin-bottom:.25rem}
+.page-sub{font-size:.9375rem;color:var(--slate-600)}
+
+/* STAT CARDS */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem}
+@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat-card{background:var(--white);border:1px solid var(--slate-200);border-radius:10px;padding:.875rem 1.125rem}
+.stat-label{font-size:.6875rem;font-weight:600;color:var(--slate-600);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.375rem}
+.stat-val{font-size:1.625rem;font-weight:700;font-family:'JetBrains Mono',monospace}
+.cv-bekliyor{color:var(--yellow)} .cv-hazirlaniyor{color:var(--blue)} .cv-tamamlandi{color:var(--green)} .cv-toplam{color:var(--slate-900)}
+
+/* FİLTRE */
+.filtre-bar{display:flex;gap:.5rem;margin-bottom:1.25rem;flex-wrap:wrap}
+.filtre-btn{display:inline-flex;align-items:center;gap:.3rem;background:var(--white);border:1px solid var(--slate-200);border-radius:7px;padding:.4rem .875rem;font-size:.8125rem;font-weight:600;font-family:'Inter',sans-serif;color:var(--slate-600);text-decoration:none;cursor:pointer;transition:all .2s}
+.filtre-btn:hover{border-color:var(--slate-400);color:var(--slate-900)}
+.filtre-btn.aktif{border-color:var(--orange);color:var(--orange);background:#FFF7F4}
+
+/* SİPARİŞ KARTLARI */
+.siparis-list{display:flex;flex-direction:column;gap:1rem}
+.siparis-kart{background:var(--white);border:1px solid var(--slate-200);border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(15,23,42,.06)}
+.siparis-kart.durum-bekliyor{border-left:4px solid var(--yellow)}
+.siparis-kart.durum-hazirlaniyor{border-left:4px solid var(--blue)}
+.siparis-kart.durum-tamamlandi{border-left:4px solid var(--green)}
+.siparis-kart.durum-iptal{border-left:4px solid var(--red)}
+
+.siparis-header{padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.sh-left{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.siparis-no{font-family:'JetBrains Mono',monospace;font-size:.9375rem;font-weight:700}
+.kullanici-badge{display:inline-flex;align-items:center;gap:.375rem;background:var(--slate-100);border:1px solid var(--slate-200);border-radius:7px;padding:.25rem .625rem;font-size:.8125rem;font-weight:600;color:var(--slate-700)}
+.avatar-xs{width:22px;height:22px;border-radius:5px;background:linear-gradient(135deg,#E85D26,#C94D1A);display:flex;align-items:center;justify-content:center;font-size:.625rem;font-weight:700;color:#fff;flex-shrink:0;text-transform:uppercase}
+.siparis-tarih{font-size:.8125rem;color:var(--slate-400)}
+.durum-badge{display:inline-flex;align-items:center;gap:.3rem;font-size:.75rem;font-weight:700;padding:.25rem .75rem;border-radius:100px;border:1px solid}
+.durum-badge.bekliyor{background:#FFFBEB;color:#92400E;border-color:#FDE68A}
+.durum-badge.hazirlaniyor{background:#EFF6FF;color:#1D4ED8;border-color:#BFDBFE}
+.durum-badge.tamamlandi{background:#D1FAE5;color:#065F46;border-color:#A7F3D0}
+.durum-badge.iptal{background:#FEE2E2;color:#991B1B;border-color:#FECACA}
+.siparis-tutar{font-family:'JetBrains Mono',monospace;font-size:1rem;font-weight:700}
+.toggle-btn{background:none;border:1px solid var(--slate-200);border-radius:6px;padding:.3rem .625rem;font-size:.8125rem;color:var(--slate-600);cursor:pointer;transition:all .2s;font-family:'Inter',sans-serif}
+.toggle-btn:hover{border-color:var(--orange);color:var(--orange)}
+
+/* DETAY */
+.siparis-detay{display:none;border-top:1px solid var(--slate-200)}
+.siparis-kart.acik .siparis-detay{display:block}
+.detay-ic{padding:1.25rem}
+
+.urun-table{width:100%;border-collapse:collapse;margin-bottom:1.25rem}
+.urun-table th{font-size:.6875rem;font-weight:700;color:var(--slate-600);text-transform:uppercase;letter-spacing:.08em;padding:.5rem .75rem;border-bottom:1px solid var(--slate-200);text-align:left;white-space:nowrap}
+.urun-table td{font-size:.875rem;padding:.625rem .75rem;border-bottom:1px solid var(--slate-100);vertical-align:top}
+.urun-table tr:last-child td{border-bottom:none}
+.toptanci-badge{display:inline-flex;font-size:.75rem;font-weight:700;padding:.2rem .6rem;border-radius:100px;background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE;white-space:nowrap}
+.toptanci-group{display:inline-flex;align-items:center;gap:.375rem;background:#F8FAFF;border:1px solid #BFDBFE;border-radius:7px;padding:.25rem .625rem .25rem .375rem}
+.toptanci-icon{font-size:.875rem}
+
+/* DURUM GÜNCELLE FORMU */
+.durum-form{display:flex;align-items:flex-start;gap:.75rem;flex-wrap:wrap;background:var(--slate-50);border-radius:8px;padding:1rem}
+.form-group{display:flex;flex-direction:column;gap:.375rem;flex:1;min-width:160px}
+.form-label{font-size:.625rem;font-weight:700;color:var(--slate-600);text-transform:uppercase;letter-spacing:.08em}
+.form-select,.form-textarea{background:var(--white);border:1px solid var(--slate-200);border-radius:7px;padding:.5rem .75rem;font-size:.875rem;font-family:'Inter',sans-serif;color:var(--slate-900);outline:none;transition:border-color .2s}
+.form-select:focus,.form-textarea:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(232,93,38,.1)}
+.form-textarea{resize:vertical;min-height:64px;flex:2;min-width:200px}
+.btn-kaydet{background:var(--orange);border:none;border-radius:7px;padding:.55rem 1.125rem;color:#fff;font-family:'Inter',sans-serif;font-size:.875rem;font-weight:700;cursor:pointer;transition:background .2s;align-self:flex-end;white-space:nowrap}
+.btn-kaydet:hover{background:var(--orange-dark)}
+
+.kullanici-notu{background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;padding:.625rem .875rem;font-size:.875rem;color:#92400E;margin-bottom:.875rem}
+.kullanici-notu strong{font-size:.6875rem;text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:.25rem}
+
+.empty-box{text-align:center;padding:3rem 2rem;background:var(--white);border:1px solid var(--slate-200);border-radius:12px;color:var(--slate-400);font-size:.9375rem}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <a class="logo-link" href="{% url 'arama' %}">
+      <img src="{% static 'karsilastirma/mesb2b.png' %}" alt="Mes Portal" class="logo-img">
+      <span class="logo-name">Mes Portal Admin</span>
+    </a>
+    <div class="nav-links">
+      <a href="{% url 'admin_siparisler' %}" class="nav-link aktif">
+        📦 Siparişler
+      </a>
+      <a href="{% url 'abonelik_yonetim' %}" class="nav-link">
+        👥 Kullanıcılar
+      </a>
+      <a href="{% url 'arama' %}" class="nav-link">
+        🔍 Arama
+      </a>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Sipariş Yönetimi</h1>
+      <p class="page-sub">Kullanıcılardan gelen siparişler — toptancı bazında detayları görün.</p>
+    </div>
+  </div>
+
+  <!-- STAT CARDS -->
+  {% with toplam=siparisler|length %}
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-label">Tüm Siparişler</div>
+      <div class="stat-val cv-toplam">{{ toplam }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Bekliyor</div>
+      <div class="stat-val cv-bekliyor">{% with siparisler as s %}{{ s|length }}{% endwith %}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Hazırlanıyor</div>
+      <div class="stat-val cv-hazirlaniyor" id="stat-hazirlaniyor">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Tamamlandı</div>
+      <div class="stat-val cv-tamamlandi" id="stat-tamamlandi">—</div>
+    </div>
+  </div>
+  {% endwith %}
+
+  <!-- FİLTRE -->
+  <div class="filtre-bar">
+    <a href="{% url 'admin_siparisler' %}" class="filtre-btn {% if not durum_filtre %}aktif{% endif %}">Tümü</a>
+    {% for kod, label in durum_secenekleri %}
+    <a href="{% url 'admin_siparisler' %}?durum={{ kod }}" class="filtre-btn {% if durum_filtre == kod %}aktif{% endif %}">
+      {% if kod == "bekliyor" %}⏳{% elif kod == "hazirlaniyor" %}🔧{% elif kod == "tamamlandi" %}✅{% else %}❌{% endif %}
+      {{ label }}
+    </a>
+    {% endfor %}
+  </div>
+
+  <!-- SİPARİŞ LİSTESİ -->
+  {% if siparisler %}
+  <div class="siparis-list">
+    {% for s in siparisler %}
+    <div class="siparis-kart durum-{{ s.durum }}" id="sk-{{ s.pk }}">
+
+      <!-- HEADER -->
+      <div class="siparis-header">
+        <div class="sh-left">
+          <span class="siparis-no">#{{ s.pk }}</span>
+          <span class="kullanici-badge">
+            <span class="avatar-xs">{{ s.kullanici.username|slice:":2" }}</span>
+            {{ s.kullanici.username }}
+          </span>
+          <span class="siparis-tarih">{{ s.olusturulma|date:"d.m.Y H:i" }}</span>
+          <span class="durum-badge {{ s.durum }}">
+            {% if s.durum == "bekliyor" %}⏳{% elif s.durum == "hazirlaniyor" %}🔧{% elif s.durum == "tamamlandi" %}✅{% else %}❌{% endif %}
+            {{ s.get_durum_display }}
+          </span>
+        </div>
+        <div style="display:flex;align-items:center;gap:.75rem">
+          <div style="text-align:right">
+            <div style="font-size:.6875rem;color:#94A3B8;font-weight:600;text-transform:uppercase;letter-spacing:.06em">Ham / Satış</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:.8125rem;color:#475569">{{ s.toplam_tutar_ham|floatformat:2 }} ₺</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:.9375rem;font-weight:700">{{ s.toplam_tutar|floatformat:2 }} ₺</div>
+          </div>
+          <button class="toggle-btn" onclick="toggleDetay({{ s.pk }})">Detay ↕</button>
+        </div>
+      </div>
+
+      <!-- DETAY (gizli, tıklanınca açılır) -->
+      <div class="siparis-detay">
+        <div class="detay-ic">
+
+          {% if s.not_alani %}
+          <div class="kullanici-notu">
+            <strong>Müşteri Notu</strong>
+            {{ s.not_alani }}
+          </div>
+          {% endif %}
+
+          {% regroup s.urunler.all by toptanci as toptanci_gruplari %}
+          {% for grup in toptanci_gruplari %}
+          <div style="margin-bottom:1rem">
+            <div class="toptanci-group" style="margin-bottom:.625rem">
+              
+              <span style="font-size:.875rem;font-weight:700;color:#1D4ED8">{{ grup.grouper }}</span>
+              <span style="font-size:.75rem;color:#64748B;margin-left:.25rem">{{ grup.list|length }} kalem</span>
+            </div>
+            <table class="urun-table">
+              <thead>
+                <tr>
+                  <th>Marka / Ürün</th>
+                  <th>Ebat</th>
+                  <th>Mevsim</th>
+                  <th>DOT</th>
+                  <th style="text-align:right">Ham Fiyat</th>
+                  <th style="text-align:right">Satış Fiyatı<br><span style="font-size:.6rem;font-weight:500;color:#94A3B8">(+%10)</span></th>
+                  <th style="text-align:right">Adet</th>
+                  <th style="text-align:right">Toplam (Ham)</th>
+                  <th style="text-align:right">Toplam (Satış)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for u in grup.list %}
+                <tr>
+                  <td>
+                    <div style="font-weight:600">{{ u.marka }}</div>
+                    <div style="font-size:.75rem;color:#64748B;max-width:280px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ u.urun_adi }}</div>
+                  </td>
+                  <td style="font-family:'JetBrains Mono',monospace;font-size:.8125rem">{{ u.ebat }}</td>
+                  <td style="font-size:.8125rem">{{ u.mevsim|default:"—" }}</td>
+                  <td style="font-family:'JetBrains Mono',monospace;font-size:.75rem">{% if u.dot and u.dot != "0" %}{{ u.dot }}{% else %}—{% endif %}</td>
+                  <td style="text-align:right;font-family:'JetBrains Mono',monospace;color:#475569">{{ u.fiyat_ham|floatformat:2 }} ₺</td>
+                  <td style="text-align:right;font-family:'JetBrains Mono',monospace;font-weight:700">{{ u.fiyat|floatformat:2 }} ₺</td>
+                  <td style="text-align:right;font-weight:700">{{ u.miktar }}</td>
+                  <td style="text-align:right;font-family:'JetBrains Mono',monospace;color:#475569">{{ u.toplam_fiyat_ham|floatformat:2 }} ₺</td>
+                  <td style="text-align:right;font-family:'JetBrains Mono',monospace;font-weight:700">{{ u.toplam_fiyat|floatformat:2 }} ₺</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% endfor %}
+
+          <!-- GENEL TOPLAM ÖZET -->
+          <div style="display:flex;justify-content:flex-end;gap:2rem;background:var(--slate-50);border:1px solid var(--slate-200);border-radius:8px;padding:.875rem 1.25rem;margin-bottom:1rem">
+            <div style="text-align:right">
+              <div style="font-size:.625rem;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.25rem">Ham Toplam</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:1.0625rem;color:#475569;font-weight:700">{{ s.toplam_tutar_ham|floatformat:2 }} ₺</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:.625rem;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.25rem">Satış Toplamı (+%10)</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:1.0625rem;font-weight:700">{{ s.toplam_tutar|floatformat:2 }} ₺</div>
+            </div>
+          </div>
+
+          <!-- DURUM GÜNCELLE -->
+          <form method="POST" action="{% url 'admin_siparis_durum' s.pk %}">
+            {% csrf_token %}
+            <div class="durum-form">
+              <div class="form-group" style="flex:0 0 180px">
+                <label class="form-label">Durumu Güncelle</label>
+                <select name="durum" class="form-select">
+                  {% for kod, label in durum_secenekleri %}
+                  <option value="{{ kod }}" {% if s.durum == kod %}selected{% endif %}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="form-group" style="flex:2">
+                <label class="form-label">Admin Notu</label>
+                <textarea name="admin_notu" class="form-textarea" placeholder="Temin durumu, kargo bilgisi vs.">{{ s.admin_notu }}</textarea>
+              </div>
+              <button type="submit" class="btn-kaydet">Kaydet</button>
+            </div>
+          </form>
+
+        </div>
+      </div>
+
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="empty-box">
+    📭 Gösterilecek sipariş yok.
+  </div>
+  {% endif %}
+</div>
+
+<script>
+function toggleDetay(id) {
+  document.getElementById('sk-' + id).classList.toggle('acik');
+}
+
+// Stat sayılarını hesapla
+(function() {
+  const kartlar = document.querySelectorAll('.siparis-kart');
+  let bek = 0, haz = 0, tam = 0;
+  kartlar.forEach(k => {
+    if (k.classList.contains('durum-bekliyor')) bek++;
+    if (k.classList.contains('durum-hazirlaniyor')) haz++;
+    if (k.classList.contains('durum-tamamlandi')) tam++;
+  });
+  // Stat kartlarını güncelle (gerçek sayılar)
+  const sb = document.querySelector('.cv-bekliyor');
+  const sh = document.getElementById('stat-hazirlaniyor');
+  const st = document.getElementById('stat-tamamlandi');
+  if (sb) sb.textContent = bek;
+  if (sh) sh.textContent = haz;
+  if (st) st.textContent = tam;
+})();
+</script>
+</body>
+</html>

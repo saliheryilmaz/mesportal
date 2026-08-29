@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MesBul — Lastik Fiyat Karşılaştırma</title>
+<title>Mes Portal</title>
 {% load static %}
-<link rel="icon" type="image/png" href="{% static 'karsilastirma/favicon1.png' %}">
+<link rel="icon" type="image/png" href="{% static 'karsilastirma/mesb2b.png' %}">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap');
 
@@ -39,137 +39,137 @@
 
   /* Header */
   .header {
-    background: rgba(20, 20, 24, 0.97);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    box-shadow: 0 1px 0 rgba(255,255,255,.06), 0 4px 24px rgba(0,0,0,.35);
+    background: rgba(15,15,18,.98);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 1px 0 rgba(255,255,255,.07), 0 4px 24px rgba(0,0,0,.4);
     position: sticky;
     top: 0;
     z-index: 100;
-    height: 72px;
+    height: 68px;
     display: flex;
     align-items: center;
   }
   .header-inner {
-    max-width: 1200px;
+    max-width: 1280px;
     margin: 0 auto;
     padding: 0 2rem;
     width: 100%;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: .625rem;
   }
-
-  /* Logo */
   .logo-area {
     display: flex;
     align-items: center;
-    gap: 0.875rem;
+    gap: .75rem;
     text-decoration: none;
+    flex-shrink: 0;
+    margin-right: auto;
   }
   .logo-img {
-    width: 40px;
-    height: 40px;
+    width: 42px;
+    height: 42px;
     border-radius: 10px;
     object-fit: cover;
-    box-shadow: 0 0 0 1px rgba(255,255,255,.1), 0 4px 12px rgba(0,0,0,.4);
+    box-shadow: 0 0 0 1px rgba(255,255,255,.1), 0 4px 12px rgba(0,0,0,.45);
     flex-shrink: 0;
   }
-  .logo-label {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-  }
+  .logo-label { display:flex; flex-direction:column; gap:1px; }
   .logo-name {
     color: #F1F5F9;
     font-size: 1.125rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    line-height: 1.2;
+    font-weight: 800;
+    letter-spacing: -.03em;
+    line-height: 1.1;
   }
   .logo-tagline {
-    color: #64748B;
-    font-size: 0.6875rem;
+    color: #475569;
+    font-size: .625rem;
     font-weight: 500;
-    letter-spacing: 0.02em;
+    letter-spacing: .07em;
     text-transform: uppercase;
   }
-
-  /* Divider */
-  .header-divider {
-    width: 1px;
-    height: 28px;
-    background: rgba(255,255,255,.08);
-    margin: 0 0.75rem;
-  }
-
-  /* User area */
-  .user-area {
-    display: flex;
+  .nav-link {
+    display: inline-flex;
     align-items: center;
-    gap: 0.625rem;
-    background: rgba(255,255,255,.05);
+    gap: .4rem;
+    color: #64748B;
+    font-size: .8125rem;
+    font-weight: 500;
+    text-decoration: none;
+    padding: .4rem .875rem;
     border: 1px solid rgba(255,255,255,.08);
-    border-radius: 10px;
-    padding: 0.375rem 0.5rem 0.375rem 0.375rem;
-    transition: background .2s, border-color .2s;
+    border-radius: 8px;
+    background: rgba(255,255,255,.03);
+    transition: color .15s, border-color .15s, background .15s;
+    white-space: nowrap;
   }
-  .user-area:hover {
-    background: rgba(255,255,255,.08);
-    border-color: rgba(255,255,255,.12);
+  .nav-link:hover {
+    color: #F1F5F9;
+    border-color: rgba(255,255,255,.18);
+    background: rgba(255,255,255,.07);
+  }
+  .nav-link svg { flex-shrink:0; opacity:.65; }
+  .nav-link:hover svg { opacity:1; }
+  .header-sep {
+    width: 1px;
+    height: 22px;
+    background: rgba(255,255,255,.09);
+    flex-shrink: 0;
+  }
+  .user-area {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(255,255,255,.09);
+    border-radius: 8px;
+    padding: .3rem .625rem .3rem .3rem;
   }
   .user-avatar {
-    width: 30px;
-    height: 30px;
-    border-radius: 7px;
-    background: linear-gradient(135deg, #E85D26, #C94D1A);
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: linear-gradient(135deg,#E85D26,#C94D1A);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.8125rem;
+    font-size: .75rem;
     font-weight: 700;
     color: #fff;
-    flex-shrink: 0;
-    letter-spacing: 0;
     text-transform: uppercase;
+    flex-shrink: 0;
   }
   .user-name {
     color: #CBD5E1;
-    font-size: 0.875rem;
-    font-weight: 500;
+    font-size: .8125rem;
+    font-weight: 600;
     white-space: nowrap;
   }
   .btn-logout {
     display: inline-flex;
     align-items: center;
-    gap: 0.375rem;
+    gap: .35rem;
     background: transparent;
-    border: 1px solid rgba(255,255,255,.1);
-    border-radius: 7px;
-    padding: 0.375rem 0.75rem;
-    color: #94A3B8;
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 8px;
+    padding: .4rem .75rem;
+    color: #64748B;
     font-family: 'Inter', sans-serif;
-    font-size: 0.8125rem;
+    font-size: .8125rem;
     font-weight: 500;
     text-decoration: none;
-    cursor: pointer;
-    transition: all .2s;
+    transition: all .15s;
     white-space: nowrap;
   }
   .btn-logout:hover {
-    background: rgba(239,68,68,.12);
-    border-color: rgba(239,68,68,.4);
+    background: rgba(239,68,68,.1);
+    border-color: rgba(239,68,68,.3);
     color: #FCA5A5;
   }
-  .btn-logout svg {
-    width: 14px;
-    height: 14px;
-    opacity: 0.7;
-    flex-shrink: 0;
-  }
-  .btn-logout:hover svg {
-    opacity: 1;
-  }
+  .btn-logout svg { width:14px; height:14px; opacity:.6; flex-shrink:0; }
+  .btn-logout:hover svg { opacity:1; }
 
 /* ===================== GİRİŞ MODALİ ===================== */
   .modal-overlay {
@@ -342,7 +342,9 @@
     .header-inner { padding: 0 1rem; }
     .logo-tagline { display: none; }
     .user-name { display: none; }
-    .header-divider { display: none; }
+    .header-sep { display: none; }
+    .nav-link { padding: .5rem .625rem; font-size: 0; gap: 0; }
+    .nav-link svg { opacity: .8; }
   }
 
   /* Main */
@@ -715,40 +717,45 @@
   <div class="header-inner">
 
     <a class="logo-area" href="{% url 'arama' %}">
-      <img src="{% static 'karsilastirma/favicon1.png' %}" alt="MesBul" class="logo-img">
+      <img src="{% static 'karsilastirma/mesb2b.png' %}" alt="Mes Portal" class="logo-img">
       <div class="logo-label">
-        <span class="logo-name">MesBul</span>
-        <span class="logo-tagline">Lastik Fiyat Karşılaştırma</span>
+        <span class="logo-name">Mes Portal</span>
+        <span class="logo-tagline">Meslas B2B Portal</span>
       </div>
     </a>
 
-    <div style="display:flex;align-items:center;gap:0.75rem;">
-      <div class="user-area" id="user-dropdown-trigger" onclick="toggleUserMenu()" style="cursor:pointer;position:relative;">
-        <div class="user-avatar">{{ request.user.username|slice:":2" }}</div>
-        <span class="user-name">{{ request.user.username }}</span>
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:2px"><path d="m6 9 6 6 6-6"/></svg>
+    {% if request.user.is_staff %}
+      <a href="{% url 'admin_siparisler' %}" class="nav-link">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        Siparişler
+      </a>
+      <a href="{% url 'abonelik_yonetim' %}" class="nav-link">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Kullanıcılar
+      </a>
+    {% else %}
+      <a href="{% url 'sepet' %}" class="nav-link">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        Sepet
+        <span id="sepet-rozet-header" style="display:none;background:#E85D26;color:#fff;font-size:.5625rem;font-weight:700;border-radius:100px;padding:.15rem .45rem;line-height:1"></span>
+      </a>
+      <a href="{% url 'siparislerim' %}" class="nav-link">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Siparişlerim
+      </a>
+    {% endif %}
 
-        <!-- Dropdown -->
-        <div id="user-menu" style="display:none;position:absolute;top:calc(100% + 8px);right:0;background:#1E293B;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:.5rem;min-width:180px;box-shadow:0 8px 24px rgba(0,0,0,.4);z-index:200">
-          <div style="padding:.375rem .625rem;font-size:.75rem;color:#64748B;font-weight:500;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:.375rem">{{ request.user.username }}</div>
-          {% if request.user.is_staff %}
-          <a href="{% url 'abonelik_yonetim' %}" style="display:flex;align-items:center;gap:.5rem;padding:.5rem .625rem;border-radius:6px;font-size:.8125rem;color:#CBD5E1;text-decoration:none;transition:background .15s" onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="this.style.background='transparent'">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            Abonelik Yönetimi
-          </a>
-          {% endif %}
-          <a href="{% url 'odeme_gecmisi' %}" style="display:flex;align-items:center;gap:.5rem;padding:.5rem .625rem;border-radius:6px;font-size:.8125rem;color:#CBD5E1;text-decoration:none;transition:background .15s" onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="this.style.background='transparent'">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-            Ödeme Geçmişi
-          </a>
-          <a href="{% url 'cikis' %}" style="display:flex;align-items:center;gap:.5rem;padding:.5rem .625rem;border-radius:6px;font-size:.8125rem;color:#FCA5A5;text-decoration:none;transition:background .15s;margin-top:.25rem" onmouseover="this.style.background='rgba(239,68,68,.1)'" onmouseout="this.style.background='transparent'">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-            Çıkış Yap
-          </a>
-        </div>
-      </div>
-      
+    <div class="header-sep"></div>
+
+    <div class="user-area">
+      <div class="user-avatar">{{ request.user.username|slice:":2" }}</div>
+      <span class="user-name">{{ request.user.username }}</span>
     </div>
+
+    <a href="{% url 'cikis' %}" class="btn-logout">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Çıkış
+    </a>
 
   </div>
 </header>
@@ -756,31 +763,11 @@
 <main class="main">
 
   <div class="hero">
-    <h1 class="hero-title">Lastik Fiyat Karşılaştırma</h1>
-    <p class="hero-subtitle">Toptancı fiyatlarını tek ekranda karşılaştırın</p>
+    <h1 class="hero-title">MES PORTAL</h1>
+    <p class="hero-subtitle">Aradığın tüm ebatları tek tıkla arat.</p>
   </div>
 
-  <div class="sources">
-    {% if demo_mod %}
-      <span class="source-chip" style="background:#FFF7F4;border-color:#FECACA;color:#E85D26;cursor:pointer" onclick="uyelikModalAc()">
-        🔒 Toptancıları görmek için üyelik alın
-      </span>
-    {% else %}
-      <span class="source-chip">USPA Lastik</span>
-      <span class="source-chip">Keskin Lastik</span>
-      <span class="source-chip">OtoSemih</span>
-      <span class="source-chip">NetLastik</span>
-      <span class="source-chip">Yocar(Lastsis)</span>
-      <span class="source-chip">Dinçbay</span>
-      <span class="source-chip">Degeras</span>
-      <span class="source-chip">Art Jant Lastik</span>
-      <span class="source-chip">Simetri</span>
-      <span class="source-chip">Yılkarlas</span>
-      <span class="source-chip">Oltay</span>
-      <span class="source-chip">AS Oto</span>
-      <span class="source-chip">Karaoğlu</span>
-    {% endif %}
-  </div>
+  
 
   <div class="card">
     {% if hata %}
@@ -862,8 +849,8 @@
   </div>
   {% endif %}
 
-  <!-- İŞ ORTAKLARIMIZ -->
-  <div class="partners-section">
+  <!-- İŞ ORTAKLARIMIZ KALDIRILDI -->
+  <div class="partners-section" style="display:none">
     <div class="partners-title">İş Ortaklarımız</div>
     <div class="carousel-track">
       <a href="https://www.uspalastik.com" target="_blank"><img src="{% static 'karsilastirma/toptancilar/uspa1.png' %}" alt="USPA Lastik"></a>
@@ -878,6 +865,8 @@
       <a href="https://b2b.yilkarlas.com/tr/giris" target="_blank"><img src="{% static 'karsilastirma/toptancilar/yilkarlas.jpeg' %}" alt="Art4" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span style="display:none;font-size:1.1rem;font-weight:700;color:#334155;letter-spacing:-.02em">Yılkarlas</span></a>
       <a href="x" target="_blank"><img src="{% static 'karsilastirma/toptancilar/oltayfoto.jpg' %}" alt="Art4" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span style="display:none;font-size:1.1rem;font-weight:700;color:#334155;letter-spacing:-.02em">Oltay</span></a>
       <a href="https://www.asotolastik.com/" target="_blank"><img src="{% static 'karsilastirma/toptancilar/asoto.jpg' %}" alt="Art4" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span style="display:none;font-size:1.1rem;font-weight:700;color:#334155;letter-spacing:-.02em">AsOto</span></a>
+      <a href="https://www.b2bkaraoglulastik.com/auth/login" target="_blank"><img src="{% static 'karsilastirma/toptancilar/karaoglu-logo.png' %}" alt="Art4" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span style="display:none;font-size:1.1rem;font-weight:700;color:#334155;letter-spacing:-.02em">Karaoğlu</span></a>
+
 
 
 
@@ -896,6 +885,8 @@
       <a href="https://www.asotolastik.com/" target="_blank"><img src="{% static 'karsilastirma/toptancilar/asoto.jpg' %}" alt="Art4" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span style="display:none;font-size:1.1rem;font-weight:700;color:#334155;letter-spacing:-.02em">AsOto</span></a>
 
       <a href="x" target="_blank"><img src="{% static 'karsilastirma/toptancilar/oltayfoto.jpg' %}" alt="Art4" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span style="display:none;font-size:1.1rem;font-weight:700;color:#334155;letter-spacing:-.02em">Oltay</span></a>
+      <a href="https://www.b2bkaraoglulastik.com/auth/login" target="_blank"><img src="{% static 'karsilastirma/toptancilar/karaoglu-logo.png' %}" alt="Art4" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span style="display:none;font-size:1.1rem;font-weight:700;color:#334155;letter-spacing:-.02em">Karaoğlu</span></a>
+
 
 
 
@@ -910,8 +901,8 @@
 
     <div class="modal-logo">
       <div class="modal-logo-badge">
-        <img src="{% static 'karsilastirma/favicon1.png' %}" alt="MesBul" class="modal-logo-img">
-        <span class="modal-logo-text">MesBul</span>
+        <img src="{% static 'karsilastirma/mesb2b.png' %}" alt="Mes Portal" class="modal-logo-img">
+        <span class="modal-logo-text">Mes Portal</span>
       </div>
     </div>
 
@@ -1012,16 +1003,8 @@ function uyelikModalKapat() {
 </script>
 
 <script>
-function toggleUserMenu() {
-  const menu = document.getElementById('user-menu');
-  menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
-}
-document.addEventListener('click', function(e) {
-  const trigger = document.getElementById('user-dropdown-trigger');
-  if (trigger && !trigger.contains(e.target)) {
-    document.getElementById('user-menu').style.display = 'none';
-  }
-});
+
+
 
 function gecmisSecim(el) {
   document.querySelector('[name=ebat]').value = el.dataset.ebat || '';
@@ -1108,20 +1091,28 @@ function toggleModalSifre() {
 (function() {
   const modal = document.getElementById('giris-modal');
   if (modal && modal.classList.contains('active')) {
-    // Arka plan içeriğini kilitle
     document.querySelector('.main') && document.querySelector('.main').classList.add('content-locked');
     document.querySelector('.header') && document.querySelector('.header').classList.add('content-locked');
-    // Kullanıcı adı inputuna odaklan
     setTimeout(function() {
       const u = document.getElementById('modal-username-input');
       if (u) u.focus();
     }, 150);
   }
 })();
+
+// ── Sepet Rozeti ─────────────────────────────────────────────────────────────
+{% if request.user.is_authenticated and not request.user.is_staff %}
+fetch('/sepet/adet/')
+  .then(r => r.json())
+  .then(d => {
+    const r = document.getElementById('sepet-rozet-header');
+    if (r && d.adet > 0) { r.textContent = d.adet; r.style.display = 'inline'; }
+  })
+  .catch(() => {});
+{% endif %}
 </script>
 
 {% include "karsilastirma/_not_widget.html" %}
 {% include "karsilastirma/_uyelik_modal.html" %}
-{% if request.user.is_authenticated %}{% include "karsilastirma/_iskonto_yonetim.html" %}{% endif %}
 </body>
 </html>

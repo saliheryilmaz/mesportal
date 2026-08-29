@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sipariş Alındı — Mes Portal</title>
+{% load static %}
+<link rel="icon" type="image/png" href="{% static 'karsilastirma/mesb2b.png' %}">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap');
+:root{--orange:#E85D26;--orange-dark:#C94D1A;--slate-50:#F8FAFC;--slate-200:#E2E8F0;--slate-600:#475569;--slate-900:#0F172A;--white:#FFFFFF;--green:#059669;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--slate-50);color:var(--slate-900);font-family:'Inter',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem}
+.card{background:var(--white);border:1px solid var(--slate-200);border-radius:14px;padding:2.5rem 2rem;max-width:540px;width:100%;box-shadow:0 4px 24px rgba(15,23,42,.08);text-align:center}
+.ico{font-size:3.5rem;margin-bottom:1rem}
+.baslik{font-size:1.5rem;font-weight:700;letter-spacing:-.03em;margin-bottom:.5rem}
+.alt{font-size:.9375rem;color:var(--slate-600);margin-bottom:1.75rem}
+.siparis-no{font-family:'JetBrains Mono',monospace;font-size:1.125rem;font-weight:700;background:var(--slate-50);border:1px solid var(--slate-200);border-radius:8px;padding:.625rem 1.25rem;display:inline-block;margin-bottom:1.75rem;color:var(--slate-900)}
+.urun-table{width:100%;border-collapse:collapse;text-align:left;margin-bottom:1.5rem}
+.urun-table th{font-size:.6875rem;font-weight:700;color:var(--slate-600);text-transform:uppercase;letter-spacing:.08em;padding:.625rem .75rem;border-bottom:1px solid var(--slate-200)}
+.urun-table td{font-size:.875rem;padding:.625rem .75rem;border-bottom:1px solid var(--slate-200)}
+.urun-table tr:last-child td{border-bottom:none}
+.toptanci-badge{display:inline-flex;align-items:center;font-size:.6875rem;font-weight:600;padding:.175rem .5rem;border-radius:100px;background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE}
+.toplam-satir{display:flex;justify-content:space-between;align-items:center;border-top:2px solid var(--slate-200);padding-top:.875rem;margin-bottom:1.5rem;font-weight:700;font-size:1rem}
+.toplam-satir .deger{font-family:'JetBrains Mono',monospace;color:var(--green)}
+.btn{display:inline-flex;align-items:center;gap:.4rem;background:var(--orange);border:none;border-radius:8px;padding:.75rem 1.5rem;color:#fff;font-family:'Inter',sans-serif;font-size:.875rem;font-weight:700;cursor:pointer;text-decoration:none;transition:background .2s;margin:.25rem}
+.btn:hover{background:var(--orange-dark)}
+.btn-outline{background:transparent;border:1px solid var(--slate-200);color:var(--slate-600)}
+.btn-outline:hover{background:var(--slate-50);background:transparent;border-color:var(--slate-900);color:var(--slate-900)}
+{% if siparis.not_alani %}
+.not-kutu{text-align:left;background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;padding:.75rem 1rem;font-size:.875rem;color:#92400E;margin-bottom:1.5rem}
+.not-kutu strong{display:block;font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.25rem}
+{% endif %}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="ico">✅</div>
+  <div class="baslik">Sipariş Alındı!</div>
+  <div class="alt">Siparişin iletildi. En kısa sürede hazırlayıp sana ulaştıracağız.</div>
+  <div class="siparis-no">#{{ siparis.pk }}</div>
+
+  {% if siparis.not_alani %}
+  <div class="not-kutu">
+    <strong>Notun</strong>
+    {{ siparis.not_alani }}
+  </div>
+  {% endif %}
+
+  <table class="urun-table">
+    <thead>
+      <tr>
+        <th>Ürün</th>
+        <th style="text-align:right">Fiyat</th>
+        <th style="text-align:right">Adet</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for u in siparis.urunler.all %}
+      <tr>
+        <td>
+          <div style="font-weight:600">{{ u.marka }}</div>
+          <div style="font-size:.75rem;color:#64748B">{{ u.ebat }}{% if u.mevsim %} · {{ u.mevsim }}{% endif %}</div>
+        </td>
+        <td style="text-align:right;font-family:'JetBrains Mono',monospace">{{ u.fiyat|floatformat:2 }} ₺</td>
+        <td style="text-align:right;font-weight:700">× {{ u.miktar }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="toplam-satir">
+    <span>Toplam Tutar</span>
+    <span class="deger">{{ siparis.toplam_tutar|floatformat:2 }} ₺</span>
+  </div>
+
+  <div>
+    <a href="{% url 'arama' %}" class="btn">Yeni Arama Yap</a>
+    <a href="{% url 'siparislerim' %}" class="btn btn-outline">Siparişlerim</a>
+  </div>
+</div>
+</body>
+</html>

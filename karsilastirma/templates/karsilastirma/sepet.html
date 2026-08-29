@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sepetim — Mes Portal</title>
+{% load static %}
+<link rel="icon" type="image/png" href="{% static 'karsilastirma/mesb2b.png' %}">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap');
+:root{
+  --slate-50:#F8FAFC;--slate-100:#F1F5F9;--slate-200:#E2E8F0;
+  --slate-400:#94A3B8;--slate-600:#475569;--slate-700:#334155;--slate-900:#0F172A;
+  --white:#FFFFFF;--orange:#E85D26;--orange-dark:#C94D1A;
+  --green:#059669;--red:#DC2626;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--slate-50);color:var(--slate-900);font-family:'Inter',sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* HEADER */
+.header{background:rgba(20,20,24,.97);backdrop-filter:blur(12px);box-shadow:0 1px 0 rgba(255,255,255,.06),0 4px 24px rgba(0,0,0,.35);height:72px;display:flex;align-items:center;padding:0 2rem;position:sticky;top:0;z-index:100}
+.header-inner{max-width:900px;margin:0 auto;width:100%;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.logo-link{display:flex;align-items:center;gap:.75rem;text-decoration:none}
+.logo-img{width:38px;height:38px;border-radius:9px;object-fit:cover;box-shadow:0 0 0 1px rgba(255,255,255,.1)}
+.logo-name{color:#F1F5F9;font-size:1.0625rem;font-weight:700;letter-spacing:-0.02em}
+.back-btn{display:inline-flex;align-items:center;gap:.4rem;color:#94A3B8;font-size:.8125rem;font-weight:500;text-decoration:none;padding:.375rem .75rem;border:1px solid rgba(255,255,255,.08);border-radius:7px;transition:all .2s}
+.back-btn:hover{color:#F1F5F9;border-color:rgba(255,255,255,.18);background:rgba(255,255,255,.06)}
+
+/* PAGE */
+.page{max-width:900px;margin:0 auto;padding:2rem 1.5rem}
+.page-title{font-size:1.375rem;font-weight:700;letter-spacing:-.02em;margin-bottom:.25rem}
+.page-sub{font-size:.9375rem;color:var(--slate-600);margin-bottom:2rem}
+
+/* BOŞSA */
+.empty-box{text-align:center;padding:4rem 2rem;background:var(--white);border:1px solid var(--slate-200);border-radius:12px}
+.empty-box .ico{font-size:3rem;margin-bottom:1rem}
+.empty-box p{color:var(--slate-600);font-size:.9375rem;margin-bottom:1.5rem}
+.btn-primary{display:inline-flex;align-items:center;gap:.4rem;background:var(--orange);border:none;border-radius:8px;padding:.75rem 1.5rem;color:#fff;font-family:'Inter',sans-serif;font-size:.875rem;font-weight:700;cursor:pointer;text-decoration:none;transition:background .2s}
+.btn-primary:hover{background:var(--orange-dark)}
+
+/* SEPET GRID */
+.sepet-grid{display:grid;grid-template-columns:1fr 320px;gap:1.5rem;align-items:start}
+@media(max-width:720px){.sepet-grid{grid-template-columns:1fr}}
+
+/* ÜRÜN KARTI */
+.urun-list{display:flex;flex-direction:column;gap:.75rem}
+.urun-kart{background:var(--white);border:1px solid var(--slate-200);border-radius:10px;padding:1.125rem 1.25rem;display:flex;align-items:flex-start;gap:1rem;box-shadow:0 1px 3px rgba(15,23,42,.06);transition:box-shadow .2s}
+.urun-kart:hover{box-shadow:0 2px 8px rgba(15,23,42,.1)}
+.urun-info{flex:1;min-width:0}
+.urun-marka{font-weight:700;font-size:.9375rem;color:var(--slate-900);margin-bottom:.2rem}
+.urun-adi{font-size:.8125rem;color:var(--slate-600);line-height:1.4;margin-bottom:.5rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.urun-meta{display:flex;flex-wrap:wrap;gap:.375rem;align-items:center}
+.badge{display:inline-flex;align-items:center;font-size:.6875rem;font-weight:600;padding:.2rem .55rem;border-radius:100px;border:1px solid}
+.badge-toptanci{background:#EFF6FF;color:#1D4ED8;border-color:#BFDBFE}
+.badge-ebat{background:#F1F5F9;color:#475569;border-color:#E2E8F0;font-family:'JetBrains Mono',monospace}
+.badge-mevsim{background:#F1F5F9;color:#475569;border-color:#E2E8F0}
+.badge-dot{background:#F1F5F9;color:#475569;border-color:#E2E8F0;font-family:'JetBrains Mono',monospace;font-size:.625rem}
+
+/* Miktar + fiyat */
+.urun-sag{display:flex;flex-direction:column;align-items:flex-end;gap:.5rem;flex-shrink:0}
+.urun-fiyat{font-family:'JetBrains Mono',monospace;font-size:1rem;font-weight:700;color:var(--slate-900)}
+.miktar-ctrl{display:flex;align-items:center;gap:.375rem}
+.miktar-btn{width:28px;height:28px;border:1px solid var(--slate-200);border-radius:6px;background:var(--white);font-size:1rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;color:var(--slate-700)}
+.miktar-btn:hover{border-color:var(--orange);color:var(--orange)}
+.miktar-deger{font-family:'JetBrains Mono',monospace;font-size:.875rem;font-weight:700;min-width:24px;text-align:center}
+.sil-btn{background:none;border:none;cursor:pointer;color:var(--slate-400);font-size:.75rem;font-weight:600;padding:0;transition:color .2s;display:flex;align-items:center;gap:.25rem}
+.sil-btn:hover{color:var(--red)}
+
+/* ÖZET KUTUSU */
+.ozet{background:var(--white);border:1px solid var(--slate-200);border-radius:10px;padding:1.5rem;box-shadow:0 1px 3px rgba(15,23,42,.06);position:sticky;top:88px}
+.ozet-baslik{font-size:.9375rem;font-weight:700;margin-bottom:1.25rem}
+.ozet-satir{display:flex;justify-content:space-between;align-items:center;margin-bottom:.625rem;font-size:.875rem;color:var(--slate-600)}
+.ozet-satir.toplam{font-weight:700;color:var(--slate-900);font-size:1rem;border-top:1px solid var(--slate-200);padding-top:.75rem;margin-top:.75rem}
+.ozet-satir .deger{font-family:'JetBrains Mono',monospace;font-weight:700}
+.not-alani{width:100%;background:var(--white);border:1px solid var(--slate-200);border-radius:7px;padding:.625rem .75rem;font-family:'Inter',sans-serif;font-size:.875rem;color:var(--slate-900);resize:vertical;min-height:72px;outline:none;margin:1rem 0 .75rem;transition:border-color .2s}
+.not-alani:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(232,93,38,.1)}
+.not-alani::placeholder{color:var(--slate-400)}
+.siparis-btn{width:100%;background:var(--orange);border:none;border-radius:8px;padding:.875rem;color:#fff;font-family:'Inter',sans-serif;font-size:.9375rem;font-weight:700;cursor:pointer;transition:background .2s;letter-spacing:.01em}
+.siparis-btn:hover{background:var(--orange-dark)}
+.siparis-btn:disabled{opacity:.6;cursor:not-allowed}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <a class="logo-link" href="{% url 'arama' %}">
+      <img src="{% static 'karsilastirma/mesb2b.png' %}" alt="Mes Portal" class="logo-img">
+      <span class="logo-name">Mes Portal</span>
+    </a>
+    <a href="{% url 'arama' %}" class="back-btn">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+      Aramaya Dön
+    </a>
+  </div>
+</header>
+
+<div class="page">
+  <h1 class="page-title">🛒 Sepetim</h1>
+  <p class="page-sub">Siparişini oluşturmadan önce ürünlerini gözden geçir.</p>
+
+  {% if urunler %}
+  <div class="sepet-grid">
+
+    <!-- ÜRÜN LİSTESİ -->
+    <div class="urun-list" id="urun-list">
+      {% for u in urunler %}
+      <div class="urun-kart" id="kart-{{ u.pk }}">
+        <div class="urun-info">
+          <div class="urun-marka">{{ u.marka }}</div>
+          <div class="urun-adi">{{ u.urun_adi }}</div>
+          <div class="urun-meta">
+            {% if not request.user.is_staff %}
+            <span class="badge badge-ebat">{{ u.ebat }}</span>
+            {% if u.mevsim %}<span class="badge badge-mevsim">{{ u.mevsim }}</span>{% endif %}
+            {% if u.dot and u.dot != "0" %}<span class="badge badge-dot">DOT: {{ u.dot }}</span>{% endif %}
+            {% else %}
+            <span class="badge badge-toptanci">{{ u.toptanci }}</span>
+            <span class="badge badge-ebat">{{ u.ebat }}</span>
+            {% if u.mevsim %}<span class="badge badge-mevsim">{{ u.mevsim }}</span>{% endif %}
+            {% if u.dot and u.dot != "0" %}<span class="badge badge-dot">DOT: {{ u.dot }}</span>{% endif %}
+            {% endif %}
+          </div>
+        </div>
+        <div class="urun-sag">
+          <div class="urun-fiyat" id="fiyat-{{ u.pk }}">{{ u.fiyat|floatformat:2 }} ₺</div>
+          <div class="miktar-ctrl">
+            <button class="miktar-btn" onclick="miktarDegistir({{ u.pk }}, -1, {{ u.fiyat }})">−</button>
+            <span class="miktar-deger" id="miktar-{{ u.pk }}">{{ u.miktar }}</span>
+            <button class="miktar-btn" onclick="miktarDegistir({{ u.pk }}, 1, {{ u.fiyat }})">+</button>
+          </div>
+          <button class="sil-btn" onclick="urunSil({{ u.pk }})">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+            Sil
+          </button>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- ÖZET -->
+    <div class="ozet">
+      <div class="ozet-baslik">Sipariş Özeti</div>
+      <div class="ozet-satir">
+        <span>Toplam Ürün</span>
+        <span class="deger" id="ozet-adet">{{ urunler|length }} kalem</span>
+      </div>
+      <div class="ozet-satir toplam">
+        <span>Toplam</span>
+        <span class="deger" id="ozet-toplam">{{ toplam|floatformat:2 }} ₺</span>
+      </div>
+
+      <form method="POST" action="{% url 'siparis_gonder' %}" id="siparis-form">
+        {% csrf_token %}
+        <textarea name="not_alani" class="not-alani" placeholder="Sipariş notu (isteğe bağlı)..."></textarea>
+        <button type="submit" class="siparis-btn" id="siparis-btn">
+          🚀 Siparişi Gönder
+        </button>
+      </form>
+    </div>
+
+  </div>
+
+  {% else %}
+  <div class="empty-box">
+    <div class="ico">🛒</div>
+    <p>Sepetiniz boş. Arama yaparak ürün ekleyin.</p>
+    <a href="{% url 'arama' %}" class="btn-primary">Aramaya Git</a>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+const CSRF = '{{ csrf_token }}';
+
+// Anlık toplam hesapla
+const fiyatlar = {};
+const miktarlar = {};
+{% for u in urunler %}
+fiyatlar[{{ u.pk }}] = {{ u.fiyat }};
+miktarlar[{{ u.pk }}] = {{ u.miktar }};
+{% endfor %}
+
+function toplamGuncelle() {
+  let toplam = 0;
+  let adet = 0;
+  for (const id in miktarlar) {
+    if (miktarlar[id] > 0) {
+      toplam += fiyatlar[id] * miktarlar[id];
+      adet++;
+    }
+  }
+  document.getElementById('ozet-toplam').textContent = toplam.toFixed(2) + ' ₺';
+  document.getElementById('ozet-adet').textContent = adet + ' kalem';
+}
+
+function miktarDegistir(id, delta, birimFiyat) {
+  const yeni = (miktarlar[id] || 1) + delta;
+  if (yeni <= 0) { urunSil(id); return; }
+
+  fetch(`/sepet/${id}/guncelle/`, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','X-CSRFToken': CSRF},
+    body: JSON.stringify({miktar: yeni}),
+  })
+  .then(r => r.json())
+  .then(d => {
+    if (d.ok) {
+      miktarlar[id] = yeni;
+      document.getElementById(`miktar-${id}`).textContent = yeni;
+      const tekFiyat = birimFiyat || fiyatlar[id];
+      document.getElementById(`fiyat-${id}`).textContent = (tekFiyat * yeni).toFixed(2) + ' ₺';
+      toplamGuncelle();
+    }
+  });
+}
+
+function urunSil(id) {
+  fetch(`/sepet/${id}/sil/`, {
+    method: 'DELETE',
+    headers: {'X-CSRFToken': CSRF},
+  })
+  .then(r => r.json())
+  .then(d => {
+    if (d.ok) {
+      const kart = document.getElementById(`kart-${id}`);
+      kart.style.transition = 'opacity .3s';
+      kart.style.opacity = '0';
+      setTimeout(() => {
+        kart.remove();
+        delete miktarlar[id];
+        toplamGuncelle();
+        // Hepsi silindiyse boş durumu göster
+        if (Object.keys(miktarlar).length === 0) {
+          document.getElementById('urun-list').innerHTML =
+            '<div class="empty-box"><div class="ico">🛒</div><p>Sepetiniz boş.</p><a href="/arama/" class="btn-primary">Aramaya Git</a></div>';
+          document.querySelector('.ozet').style.display = 'none';
+        }
+      }, 300);
+    }
+  });
+}
+
+document.getElementById('siparis-form')?.addEventListener('submit', function() {
+  const btn = document.getElementById('siparis-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Gönderiliyor...';
+});
+</script>
+</body>
+</html>

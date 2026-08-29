@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Abonelik Yönetimi — MesBul</title>
+<title>Abonelik Yönetimi — Mes Portal</title>
 {% load static %}
-<link rel="icon" type="image/png" href="{% static 'karsilastirma/favicon1.png' %}">
+<link rel="icon" type="image/png" href="{% static 'karsilastirma/mesb2b.png' %}">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap');
 :root {
@@ -97,8 +97,8 @@ td{padding:.75rem 1.25rem;font-size:.875rem;vertical-align:middle}
 <header class="header">
   <div class="header-inner">
     <a class="logo-link" href="{% url 'arama' %}">
-      <img src="{% static 'karsilastirma/favicon1.png' %}" alt="MesBul" class="logo-img">
-      <span class="logo-name">MesBul</span>
+      <img src="{% static 'karsilastirma/mesb2b.png' %}" alt="Mes Portal" class="logo-img">
+      <span class="logo-name">Mes Portal</span>
     </a>
     <a href="{% url 'arama' %}" class="back-btn">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
@@ -257,52 +257,6 @@ td{padding:.75rem 1.25rem;font-size:.875rem;vertical-align:middle}
         {% endfor %}
       </tbody>
     </table>
-  </div>
-
-  <!-- ÖDEME EKLE -->
-  <div class="add-user-card" style="margin-top:1.5rem">
-    <div class="add-user-title">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-      Ödeme Kaydı Ekle
-    </div>
-    <form method="POST" action="{% url 'odeme_ekle' %}">
-      {% csrf_token %}
-      <div class="add-user-grid">
-        <div class="field-group">
-          <label class="field-label">Kullanıcı *</label>
-          <select name="kullanici_id" class="field-ctrl" required>
-            <option value="">— Seç —</option>
-            {% for u in kullanicilar %}
-              <option value="{{ u.id }}">{{ u.username }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="field-group">
-          <label class="field-label">Tutar (₺) *</label>
-          <input type="text" name="tutar" class="field-ctrl" placeholder="1500.00" required>
-        </div>
-        <div class="field-group">
-          <label class="field-label">Tarih *</label>
-          <input type="date" name="tarih" class="field-ctrl" required>
-        </div>
-        <div class="field-group">
-          <label class="field-label">Yöntem</label>
-          <select name="yontem" class="field-ctrl">
-            <option value="havale">Havale / EFT</option>
-            <option value="nakit">Nakit</option>
-            <option value="kredi_karti">Kredi Kartı</option>
-            <option value="diger">Diğer</option>
-          </select>
-        </div>
-        <div class="field-group" style="grid-column:span 2">
-          <label class="field-label">Açıklama</label>
-          <input type="text" name="aciklama" class="field-ctrl" placeholder="Dekont no, dönem vb.">
-        </div>
-      </div>
-      <div class="add-user-footer">
-        <button type="submit" class="btn-add">+ Ödeme Ekle</button>
-      </div>
-    </form>
   </div>
 
 </div>

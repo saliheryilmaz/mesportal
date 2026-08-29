@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Siparişlerim — Mes Portal</title>
+{% load static %}
+<link rel="icon" type="image/png" href="{% static 'karsilastirma/mesb2b.png' %}">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap');
+:root{
+  --slate-50:#F8FAFC;--slate-100:#F1F5F9;--slate-200:#E2E8F0;
+  --slate-400:#94A3B8;--slate-600:#475569;--slate-700:#334155;--slate-900:#0F172A;
+  --white:#FFFFFF;--orange:#E85D26;--orange-dark:#C94D1A;
+  --green:#059669;--yellow:#D97706;--red:#DC2626;--blue:#2563EB;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--slate-50);color:var(--slate-900);font-family:'Inter',sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased}
+.header{background:rgba(20,20,24,.97);backdrop-filter:blur(12px);box-shadow:0 1px 0 rgba(255,255,255,.06),0 4px 24px rgba(0,0,0,.35);height:72px;display:flex;align-items:center;padding:0 2rem;position:sticky;top:0;z-index:100}
+.header-inner{max-width:900px;margin:0 auto;width:100%;display:flex;align-items:center;justify-content:space-between}
+.logo-link{display:flex;align-items:center;gap:.75rem;text-decoration:none}
+.logo-img{width:38px;height:38px;border-radius:9px;object-fit:cover}
+.logo-name{color:#F1F5F9;font-size:1.0625rem;font-weight:700;letter-spacing:-0.02em}
+.back-btn{display:inline-flex;align-items:center;gap:.4rem;color:#94A3B8;font-size:.8125rem;font-weight:500;text-decoration:none;padding:.375rem .75rem;border:1px solid rgba(255,255,255,.08);border-radius:7px;transition:all .2s}
+.back-btn:hover{color:#F1F5F9;border-color:rgba(255,255,255,.18);background:rgba(255,255,255,.06)}
+.page{max-width:900px;margin:0 auto;padding:2rem 1.5rem}
+.page-title{font-size:1.375rem;font-weight:700;letter-spacing:-.02em;margin-bottom:.25rem}
+.page-sub{font-size:.9375rem;color:var(--slate-600);margin-bottom:2rem}
+
+/* SİPARİŞ KARTLARI */
+.siparis-list{display:flex;flex-direction:column;gap:1rem}
+.siparis-kart{background:var(--white);border:1px solid var(--slate-200);border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(15,23,42,.06)}
+.siparis-header{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;border-bottom:1px solid var(--slate-200);cursor:pointer;user-select:none;transition:background .15s}
+.siparis-header:hover{background:var(--slate-50)}
+.siparis-header-left{display:flex;align-items:center;gap:.875rem}
+.siparis-no{font-family:'JetBrains Mono',monospace;font-size:.875rem;font-weight:700;color:var(--slate-900)}
+.siparis-tarih{font-size:.8125rem;color:var(--slate-400)}
+.siparis-header-right{display:flex;align-items:center;gap:.75rem}
+.durum-badge{display:inline-flex;align-items:center;gap:.3rem;font-size:.75rem;font-weight:700;padding:.25rem .75rem;border-radius:100px;border:1px solid}
+.durum-bekliyor{background:#FFFBEB;color:#92400E;border-color:#FDE68A}
+.durum-hazirlaniyor{background:#EFF6FF;color:#1D4ED8;border-color:#BFDBFE}
+.durum-tamamlandi{background:#D1FAE5;color:#065F46;border-color:#A7F3D0}
+.durum-iptal{background:#FEE2E2;color:#991B1B;border-color:#FECACA}
+.siparis-tutar{font-family:'JetBrains Mono',monospace;font-size:.9375rem;font-weight:700;color:var(--slate-900)}
+.chevron{transition:transform .25s;color:var(--slate-400)}
+.siparis-kart.acik .chevron{transform:rotate(180deg)}
+.siparis-body{display:none;padding:1rem 1.25rem}
+.siparis-kart.acik .siparis-body{display:block}
+.urun-table{width:100%;border-collapse:collapse}
+.urun-table th{font-size:.6875rem;font-weight:700;color:var(--slate-600);text-transform:uppercase;letter-spacing:.08em;padding:.5rem .625rem;border-bottom:1px solid var(--slate-200);text-align:left}
+.urun-table td{font-size:.875rem;padding:.5rem .625rem;border-bottom:1px solid var(--slate-100)}
+.urun-table tr:last-child td{border-bottom:none}
+.toptanci-badge{display:inline-flex;font-size:.6875rem;font-weight:600;padding:.15rem .5rem;border-radius:100px;background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE}
+.not-kutu{margin-top:.875rem;background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;padding:.625rem .875rem;font-size:.875rem;color:#92400E}
+.not-kutu strong{font-size:.6875rem;text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:.25rem}
+
+.empty-box{text-align:center;padding:4rem 2rem;background:var(--white);border:1px solid var(--slate-200);border-radius:12px}
+.empty-box .ico{font-size:3rem;margin-bottom:1rem}
+.empty-box p{color:var(--slate-600);margin-bottom:1.5rem}
+.btn-primary{display:inline-flex;align-items:center;gap:.4rem;background:var(--orange);border:none;border-radius:8px;padding:.75rem 1.5rem;color:#fff;font-family:'Inter',sans-serif;font-size:.875rem;font-weight:700;cursor:pointer;text-decoration:none;transition:background .2s}
+.btn-primary:hover{background:var(--orange-dark)}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="header-inner">
+    <a class="logo-link" href="{% url 'arama' %}">
+      <img src="{% static 'karsilastirma/mesb2b.png' %}" alt="Mes Portal" class="logo-img">
+      <span class="logo-name">Mes Portal</span>
+    </a>
+    <a href="{% url 'arama' %}" class="back-btn">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+      Geri
+    </a>
+  </div>
+</header>
+
+<div class="page">
+  <h1 class="page-title">Siparişlerim</h1>
+  <p class="page-sub">Geçmiş ve aktif siparişlerin burada listelenir.</p>
+
+  {% if siparisler %}
+  <div class="siparis-list">
+    {% for s in siparisler %}
+    <div class="siparis-kart" id="siparis-{{ s.pk }}">
+      <div class="siparis-header" onclick="toggleSiparis({{ s.pk }})">
+        <div class="siparis-header-left">
+          <span class="siparis-no">#{{ s.pk }}</span>
+          <span class="siparis-tarih">{{ s.olusturulma|date:"d.m.Y H:i" }}</span>
+        </div>
+        <div class="siparis-header-right">
+          <span class="durum-badge durum-{{ s.durum }}">
+            {% if s.durum == "bekliyor" %}⏳{% elif s.durum == "hazirlaniyor" %}🔧{% elif s.durum == "tamamlandi" %}✅{% else %}❌{% endif %}
+            {{ s.get_durum_display }}
+          </span>
+          <span class="siparis-tutar">{{ s.toplam_tutar|floatformat:2 }} ₺</span>
+          <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </div>
+      </div>
+      <div class="siparis-body">
+        <table class="urun-table">
+          <thead>
+            <tr>
+              <th>Ürün</th>
+              <th style="text-align:right">Birim Fiyat</th>
+              <th style="text-align:right">Adet</th>
+              <th style="text-align:right">Toplam</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for u in s.urunler.all %}
+            <tr>
+              <td>
+                <div style="font-weight:600">{{ u.marka }}</div>
+                <div style="font-size:.75rem;color:#64748B">{{ u.urun_adi|truncatechars:60 }}</div>
+                <div style="font-size:.6875rem;color:#94A3B8">{{ u.ebat }}{% if u.mevsim %} · {{ u.mevsim }}{% endif %}{% if u.dot and u.dot != "0" %} · DOT:{{ u.dot }}{% endif %}</div>
+              </td>
+              <td style="text-align:right;font-family:'JetBrains Mono',monospace">{{ u.fiyat|floatformat:2 }} ₺</td>
+              <td style="text-align:right;font-weight:700">{{ u.miktar }}</td>
+              <td style="text-align:right;font-family:'JetBrains Mono',monospace;font-weight:700">{{ u.toplam_fiyat|floatformat:2 }} ₺</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% if s.not_alani %}
+        <div class="not-kutu">
+          <strong>Notun</strong>{{ s.not_alani }}
+        </div>
+        {% endif %}
+        {% if s.admin_notu %}
+        <div class="not-kutu" style="background:#F0FDF4;border-color:#A7F3D0;color:#065F46;margin-top:.5rem">
+          <strong>Admin Notu</strong>{{ s.admin_notu }}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="empty-box">
+    <div class="ico">📋</div>
+    <p>Henüz sipariş vermediniz.</p>
+    <a href="{% url 'arama' %}" class="btn-primary">Aramalara Git</a>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+function toggleSiparis(id) {
+  const kart = document.getElementById('siparis-' + id);
+  kart.classList.toggle('acik');
+}
+</script>
+</body>
+</html>

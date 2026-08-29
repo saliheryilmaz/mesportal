@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{{ ebat }} — MesBul</title>
+<title>{{ ebat }} — Mes Portal</title>
 {% load static %}
-<link rel="icon" type="image/png" href="{% static 'karsilastirma/favicon1.png' %}">
+<link rel="icon" type="image/png" href="{% static 'karsilastirma/mesb2b.png' %}">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 :root {
@@ -116,6 +116,24 @@ td{padding:.875rem 1rem;font-size:.875rem;vertical-align:middle}
 /* B2B butonu */
 .b2b-btn{display:inline-flex;align-items:center;justify-content:center;background:#1E40AF;color:#fff;font-size:.75rem;font-weight:700;border-radius:4px;padding:.25rem .625rem;text-decoration:none;letter-spacing:.03em;transition:background .2s;white-space:nowrap}
 .b2b-btn:hover{background:#1e3a8a}
+
+/* Sepet butonu */
+.sepet-btn{display:inline-flex;align-items:center;justify-content:center;background:#22C55E;color:#fff;border:none;font-size:1.25rem;font-weight:700;border-radius:6px;width:34px;height:34px;cursor:pointer;transition:all .18s;flex-shrink:0;line-height:1}
+.sepet-btn:hover{background:#16A34A;transform:scale(1.08)}
+.sepet-btn:active{transform:scale(.95)}
+.sepet-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.sepet-btn.eklendi{background:#16A34A}
+
+/* Adet input */
+.adet-input{width:52px;height:34px;border:1.5px solid var(--slate-200);border-radius:6px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:.9375rem;font-weight:700;color:var(--slate-900);background:#fff;outline:none;transition:border-color .2s;-moz-appearance:textfield}
+.adet-input::-webkit-inner-spin-button,.adet-input::-webkit-outer-spin-button{opacity:1;height:28px}
+.adet-input:focus{border-color:var(--orange);box-shadow:0 0 0 2px rgba(232,93,38,.1)}
+.sepet-satir{display:inline-flex;align-items:center;gap:.375rem}
+
+/* Sepet rozeti */
+.sepet-link{display:inline-flex;align-items:center;gap:.375rem;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:.375rem .75rem;color:#94A3B8;font-size:.8125rem;font-weight:600;text-decoration:none;transition:all .2s;position:relative}
+.sepet-link:hover{background:rgba(255,255,255,.12);color:#F1F5F9}
+.sepet-rozet{background:#E85D26;color:#fff;font-size:.625rem;font-weight:700;border-radius:100px;padding:.1rem .4rem;min-width:18px;text-align:center;line-height:1.5}
 
 /* EMPTY */
 .empty{text-align:center;padding:4rem 2rem;color:var(--muted)}
@@ -338,8 +356,8 @@ td{padding:.875rem 1rem;font-size:.875rem;vertical-align:middle}
 <div class="topbar">
   <div class="topbar-left">
     <a href="{% url 'arama' %}" class="logo-link">
-      <img src="{% static 'karsilastirma/favicon1.png' %}" alt="MesBul" class="logo-img-sm">
-      <span class="logo-name">MesBul</span>
+      <img src="{% static 'karsilastirma/mesb2b.png' %}" alt="Mes Portal" class="logo-img-sm">
+      <span class="logo-name">Mes Portal</span>
     </a>
     <div class="topbar-sep"></div>
     <a href="{% url 'arama' %}" class="back-btn">
@@ -356,6 +374,12 @@ td{padding:.875rem 1rem;font-size:.875rem;vertical-align:middle}
   </div>
   <div class="topbar-right">
     <div class="meta-pill"><span id="visible-count">{{ sonuc_sayisi }}</span> ürün</div>
+    {% if not request.user.is_staff %}
+    <a href="{% url 'sepet' %}" class="sepet-link" id="sepet-link-topbar">
+      🛒 Sepet
+      <span class="sepet-rozet" id="sepet-rozet-topbar" style="display:none">0</span>
+    </a>
+    {% endif %}
     <a href="{% url 'cikis' %}" class="btn-logout-sm">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
       Çıkış
@@ -370,7 +394,7 @@ td{padding:.875rem 1rem;font-size:.875rem;vertical-align:middle}
 <!-- SIDEBAR -->
 <aside class="sidebar">
 
-  {% if not demo_mod %}
+  {% if not toptanci_gizle %}
   <div class="filter-section">
     <div class="filter-title">
       Toptancı
@@ -385,21 +409,6 @@ td{padding:.875rem 1rem;font-size:.875rem;vertical-align:middle}
       </div>
       {% endfor %}
     </div>
-  </div>
-
-  <hr class="filter-divider">
-  {% else %}
-  <div class="filter-section">
-    <div class="filter-title">Toptancı</div>
-    <a href="/" onclick="uyelikModalAc();return false;"
-      style="display:flex;align-items:center;gap:.5rem;background:#FFF7F4;border:1px solid #FECACA;border-radius:6px;padding:.625rem .75rem;text-decoration:none;transition:background .2s"
-      onmouseover="this.style.background='#FEE2E2'" onmouseout="this.style.background='#FFF7F4'">
-      <span style="font-size:1rem">🔒</span>
-      <div>
-        <div style="font-size:.8125rem;font-weight:700;color:#E85D26">Toptancıları Görmek İçin</div>
-        <div style="font-size:.75rem;color:#C2410C;font-weight:500">Ücretli Üyelik Alın →</div>
-      </div>
-    </a>
   </div>
 
   <hr class="filter-divider">
@@ -465,27 +474,12 @@ td{padding:.875rem 1rem;font-size:.875rem;vertical-align:middle}
 <!-- MAIN -->
 <main class="main">
 
-  {% if hatali_toptancilar and not demo_mod %}
+  {% if hatali_toptancilar and not toptanci_gizle %}
   <div class="hata-banner">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
     <span>Şu anda bağlantı kurulamayan toptancılar: <strong>{{ hatali_toptancilar|join:", " }}</strong> — sonuçlar eksik olabilir.</span>
   </div>
   {% endif %}
-
-  <div class="stats">
-    <div class="stat">
-      <div class="lbl">En Ucuz</div>
-      <div class="val green" id="stat-min">{% if sonuclar %}{{ sonuclar.0.fiyat_str }}{% else %}—{% endif %}</div>
-    </div>
-    <div class="stat">
-      <div class="lbl">En Pahalı</div>
-      <div class="val" id="stat-max">{% if sonuclar %}{% with sonuclar|last as son %}{{ son.fiyat_str }}{% endwith %}{% else %}—{% endif %}</div>
-    </div>
-    <div class="stat">
-      <div class="lbl">Toplam Ürün</div>
-      <div class="val blue" id="stat-count">{{ sonuc_sayisi }}</div>
-    </div>
-  </div>
 
   {% if sonuclar %}
 
@@ -500,10 +494,8 @@ td{padding:.875rem 1rem;font-size:.875rem;vertical-align:middle}
       <thead>
         <tr>
           <th>#</th>
-          {% if not demo_mod %}
+          {% if not toptanci_gizle %}
             <th>Toptancı</th>
-          {% else %}
-            <th>Toptancı <span style="font-size:.6rem;font-weight:600;color:#E85D26;background:#FFF7F4;border:1px solid #FECACA;border-radius:4px;padding:.1rem .35rem;vertical-align:middle;white-space:nowrap">🔒 Üye</span></th>
           {% endif %}
           <th>Marka</th>
           <th>Model</th>
@@ -511,7 +503,7 @@ td{padding:.875rem 1rem;font-size:.875rem;vertical-align:middle}
           <th class="gizle">DOT</th>
           <th class="gizle">Stok</th>
           <th style="text-align:right">Fiyat</th>
-          {% if not demo_mod %}<th class="gizle">B2B</th>{% endif %}
+          {% if not toptanci_gizle %}<th class="gizle">B2B / İşlem</th>{% else %}<th class="gizle" style="text-align:center">Adet</th>{% endif %}
         </tr>
       </thead>
       <tbody id="table-body">
@@ -526,15 +518,10 @@ td{padding:.875rem 1rem;font-size:.875rem;vertical-align:middle}
             data-idx="{{ forloop.counter }}">
 
           <td><span class="sira">{{ forloop.counter }}</span></td>
-          {% if not demo_mod %}
+          {% if not toptanci_gizle %}
             <td>
               <div class="toptanci-name" data-toptanci-key="{{ u.toptanci }}">{{ u.toptanci }}</div>
             </td>
-          {% else %}
-            <td><a href="/" onclick="uyelikModalAc();return false;"
-              style="display:inline-flex;align-items:center;gap:.3rem;font-size:.75rem;font-weight:600;color:#E85D26;background:#FFF7F4;border:1px solid #FECACA;border-radius:4px;padding:.2rem .5rem;text-decoration:none;white-space:nowrap">
-              🔒 Üyelik Al
-            </a></td>
           {% endif %}
           <td><div class="marka-name">{{ u.marka }}</div></td>
           <td><div class="model-name">{{ u.urun_adi }}</div></td>
@@ -571,36 +558,37 @@ td{padding:.875rem 1rem;font-size:.875rem;vertical-align:middle}
             </div>
           </td>
 
-          <td class="gizle" style="text-align:right">
-            {% if not demo_mod %}
+          <td class="gizle" style="text-align:right;white-space:nowrap">
+            {% if not toptanci_gizle %}
             {% for toptanci_adi, bilgi in b2b_linkler.items %}
               {% if toptanci_adi == u.toptanci %}
                 <a href="{{ bilgi.url }}" target="_blank" class="b2b-btn">B2B</a>
               {% endif %}
             {% endfor %}
             {% endif %}
+            <span class="sepet-satir">
+              <input type="number" class="adet-input" value="1" min="1" max="99"
+                     id="adet-{{ forloop.counter }}"
+                     onkeydown="if(event.key==='Enter'){sepeteEkleAdet(this)}"
+                     style="display:{% if toptanci_gizle %}inline-block{% else %}none{% endif %}">
+              <button class="sepet-btn"
+                data-toptanci="{{ u.toptanci }}"
+                data-urun="{{ u.urun_adi }}"
+                data-marka="{{ u.marka }}"
+                data-ebat="{{ ebat }}"
+                data-mevsim="{{ u.mevsim }}"
+                data-dot="{{ u.dot }}"
+                data-fiyat="{{ u.fiyat }}"
+                data-adet-id="adet-{{ forloop.counter }}"
+                onclick="sepeteEkleAdet(this)"
+                title="Sepete Ekle">+</button>
+            </span>
           </td>
 
         </tr>
         {% endfor %}
       </tbody>
     </table>
-  </div>
-
-  <!-- MOBİL STAT BAR -->
-  <div class="m-stats">
-    <div class="m-stat">
-      <div class="m-stat-label">En Ucuz</div>
-      <div class="m-stat-val green">{% if sonuclar %}{{ sonuclar.0.fiyat_str }}{% else %}—{% endif %}</div>
-    </div>
-    <div class="m-stat">
-      <div class="m-stat-label">En Pahalı</div>
-      <div class="m-stat-val">{% if sonuclar %}{% with sonuclar|last as son %}{{ son.fiyat_str }}{% endwith %}{% else %}—{% endif %}</div>
-    </div>
-    <div class="m-stat">
-      <div class="m-stat-label">Toplam</div>
-      <div class="m-stat-val blue" id="m-stat-count">{{ sonuc_sayisi }}</div>
-    </div>
   </div>
 
   <!-- MOBİL TOOLBAR -->
@@ -633,10 +621,7 @@ td{padding:.875rem 1rem;font-size:.875rem;vertical-align:middle}
 
       <!-- Alt satır: Badge'ler -->
       <div class="m-card-badges">
-        {% if not demo_mod %}<span class="mb mb-seller" data-toptanci-key="{{ u.toptanci }}">{{ u.toptanci }}</span>
-        {% else %}
-          <a href="/" onclick="uyelikModalAc();return false;"
-            class="mb" style="background:#FFF7F4;color:#E85D26;border:1px solid #FECACA;font-weight:700;text-decoration:none">🔒 Üyelik Al</a>
+        {% if not toptanci_gizle %}<span class="mb mb-seller" data-toptanci-key="{{ u.toptanci }}">{{ u.toptanci }}</span>
         {% endif %}
 
         {% if "kış" in u.mevsim|lower or "kis" in u.mevsim|lower %}
@@ -661,13 +646,29 @@ td{padding:.875rem 1rem;font-size:.875rem;vertical-align:middle}
           <span class="mb mb-cheapest">En Ucuz</span>
         {% endif %}
 
-        {% if not demo_mod %}
+        {% if not toptanci_gizle %}
         {% for toptanci_adi, bilgi in b2b_linkler.items %}
           {% if toptanci_adi == u.toptanci %}
             <a href="{{ bilgi.url }}" target="_blank" class="mb mb-b2b">B2B</a>
           {% endif %}
         {% endfor %}
         {% endif %}
+        <button class="mb sepet-btn"
+          style="width:30px;height:30px;font-size:1.125rem;border-radius:5px"
+          data-toptanci="{{ u.toptanci }}"
+          data-urun="{{ u.urun_adi }}"
+          data-marka="{{ u.marka }}"
+          data-ebat="{{ ebat }}"
+          data-mevsim="{{ u.mevsim }}"
+          data-dot="{{ u.dot }}"
+          data-fiyat="{{ u.fiyat }}"
+          data-adet-id="m-adet-{{ forloop.counter }}"
+          onclick="sepeteEkleAdet(this)"
+          title="Sepete Ekle">+</button>
+        <input type="number" class="adet-input" value="1" min="1" max="99"
+               id="m-adet-{{ forloop.counter }}"
+               style="width:44px;height:30px;font-size:.8125rem"
+               onkeydown="if(event.key==='Enter'){sepeteEkleAdet(document.querySelector('[data-adet-id=m-adet-{{ forloop.counter }}]'))}">
       </div>
 
     </div>
@@ -786,7 +787,98 @@ function sortBy(field) {
   applyFilters();
 }
 
-// Başlangıçta arama sayfasından gelen mevsim seçimini işaretle
+// ── Sepet İşlemleri ─────────────────────────────────────────────────────────
+function sepetRozetGuncelle(adet) {
+  const rozet = document.getElementById('sepet-rozet-topbar');
+  if (!rozet) return;
+  if (adet > 0) {
+    rozet.textContent = adet;
+    rozet.style.display = 'inline';
+  } else {
+    rozet.style.display = 'none';
+  }
+}
+
+// Sayfa yüklenince sepet adetini çek
+fetch('/sepet/adet/')
+  .then(r => r.json())
+  .then(d => sepetRozetGuncelle(d.adet))
+  .catch(() => {});
+
+function sepeteEkleAdet(el) {
+  // el: buton veya input — butona basıldığında data-adet-id'den input'u bul
+  let btn, adetInput;
+  if (el.tagName === 'INPUT') {
+    // Enter ile tetiklendi — parent'ta butonu ara
+    const satir = el.closest('.sepet-satir') || el.parentElement;
+    btn = satir ? satir.querySelector('.sepet-btn') : null;
+    adetInput = el;
+  } else {
+    btn = el;
+    const adetId = btn.dataset.adetId;
+    adetInput = adetId ? document.getElementById(adetId) : null;
+  }
+
+  if (!btn) return;
+
+  const adet = adetInput ? Math.max(1, parseInt(adetInput.value) || 1) : 1;
+
+  const data = {
+    toptanci: btn.dataset.toptanci,
+    urun_adi: btn.dataset.urun,
+    marka:    btn.dataset.marka,
+    ebat:     btn.dataset.ebat,
+    mevsim:   btn.dataset.mevsim,
+    dot:      btn.dataset.dot,
+    fiyat:    parseFloat(btn.dataset.fiyat),
+    miktar:   adet,
+  };
+
+  btn.disabled = true;
+  const origText = btn.textContent;
+  btn.textContent = '✓';
+
+  fetch('/sepet/ekle/', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','X-CSRFToken': getCsrf()},
+    body: JSON.stringify(data),
+  })
+  .then(r => r.json())
+  .then(d => {
+    if (d.ok) {
+      btn.classList.add('eklendi');
+      sepetRozetGuncelle(d.sepet_adet);
+      setTimeout(() => {
+        btn.textContent = origText;
+        btn.classList.remove('eklendi');
+        btn.disabled = false;
+        if (adetInput) adetInput.value = 1;
+      }, 1200);
+    } else {
+      btn.textContent = '!';
+      btn.disabled = false;
+    }
+  })
+  .catch(() => {
+    btn.textContent = '!';
+    btn.disabled = false;
+  });
+}
+
+// Eski fonksiyon — geriye dönük uyumluluk
+function sepeteEkle(btn) { sepeteEkleAdet(btn); }
+
+function getCsrf() {
+  const name = 'csrftoken';
+  const cookies = document.cookie.split(';');
+  for (let c of cookies) {
+    const [k, v] = c.trim().split('=');
+    if (k === name) return decodeURIComponent(v);
+  }
+  return '';
+}
+
+// Başlangıçta arama sayfasından gelen mevsim ve DOT seçimini işaretle
 const initialMevsim = "{{ mevsim }}";
 if (initialMevsim) {
   document.querySelectorAll('.filter-cb[data-filter="mevsim"]').forEach(cb => {
@@ -867,6 +959,5 @@ document.addEventListener('touchstart', function(e) {
 </button>
 
 {% include "karsilastirma/_not_widget.html" %}
-{% if demo_mod %}{% include "karsilastirma/_uyelik_modal.html" %}{% endif %}
 </body>
 </html>

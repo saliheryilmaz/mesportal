@@ -28,7 +28,7 @@ from .yilkarlas_servis import yilkarlas_ara
 from .oltay_servis     import oltay_ara
 from .asoto_servis     import asoto_ara
 from .karaoglu_servis  import karaoglu_ara
-from .models import AramaGecmisi, Abonelik, Odeme, Notlar, ToptanciIskonto
+from .models import AramaGecmisi, Abonelik, Odeme, Notlar, ToptanciIskonto, SepetUrun, Siparis, SiparisUrun
 
 
 class AbonelikGerekli(LoginRequiredMixin):
@@ -462,6 +462,11 @@ class SonuclarView(AbonelikGerekli, View):
             sonuc_sayisi=len(sonuclar),
         )
 
+        # Kullanıcılara %10 fiyat zammı uygula (admin görmuyor)
+        if not request.user.is_staff:
+            for u in sonuclar:
+                u.fiyat = round(u.fiyat * 1.10, 2)
+
         en_ucuz_fiyat = sonuclar[0].fiyat if sonuclar else None
 
         toptanci_sayilari = dict(Counter(s.toptanci for s in sonuclar))
@@ -496,6 +501,8 @@ class SonuclarView(AbonelikGerekli, View):
             "b2b_linkler":        B2B_LINKLER,
             "hatali_toptancilar": hatali_toptancilar,
             "iskontolar":         iskontolar,
+            # Toptancı bilgisi sadece admin'e gösterilir
+            "toptanci_gizle":     not request.user.is_staff,
             "demo_mod":           (
                 hasattr(request.user, 'abonelik') and
                 request.user.abonelik.plan == "demo"
@@ -883,3 +890,282 @@ class NotSilView(LoginRequiredMixin, View):
         not_obj = get_object_or_404(Notlar, pk=not_id, kullanici=request.user)
         not_obj.delete()
         return JsonResponse({"ok": True})
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SEPET & SİPARİŞ VIEW'LARI
+# ─────────────────────────────────────────────────────────────────────────────
+
+@method_decorator(login_required(login_url='/'), name='dispatch')
+class SepeteEkleView(View):
+    """
+    AJAX POST — sonuçlar sayfasındaki 'Sepete Ekle' butonundan gelir.
+    Aynı (toptanci + urun_adi + ebat) zaten varsa miktarı 1 artırır.
+    """
+
+    def post(self, request):
+        try:
+            body = json.loads(request.body)
+        except (ValueError, json.JSONDecodeError):
+            return JsonResponse({"hata": "Geçersiz istek"}, status=400)
+
+        toptanci = body.get("toptanci", "").strip()
+        urun_adi = body.get("urun_adi", "").strip()
+        marka    = body.get("marka",    "").strip()
+        ebat     = body.get("ebat",     "").strip()
+        mevsim   = body.get("mevsim",   "").strip()
+        dot      = body.get("dot",      "").strip()
+        try:
+            fiyat = float(body.get("fiyat", 0))
+        except (ValueError, TypeError):
+            return JsonResponse({"hata": "Geçersiz fiyat"}, status=400)
+
+        try:
+            miktar = max(1, int(body.get("miktar", 1)))
+        except (ValueError, TypeError):
+            miktar = 1
+
+        if not toptanci or not urun_adi or not ebat or fiyat <= 0:
+            return JsonResponse({"hata": "Eksik ürün bilgisi"}, status=400)
+
+        # Aynı ürün sepette varsa miktarı artır
+        urun, olusturuldu = SepetUrun.objects.get_or_create(
+            kullanici=request.user,
+            toptanci=toptanci,
+            urun_adi=urun_adi,
+            ebat=ebat,
+            defaults={
+                "marka":  marka,
+                "mevsim": mevsim,
+                "dot":    dot,
+                "fiyat":  fiyat,
+                "miktar": miktar,
+            }
+        )
+        if not olusturuldu:
+            urun.miktar += miktar
+            urun.save(update_fields=["miktar"])
+
+        # Toplam sepet ürün adedi
+        sepet_adet = SepetUrun.objects.filter(kullanici=request.user).count()
+        return JsonResponse({
+            "ok":          True,
+            "olusturuldu": olusturuldu,
+            "miktar":      urun.miktar,
+            "sepet_adet":  sepet_adet,
+        })
+
+
+@method_decorator(login_required(login_url='/'), name='dispatch')
+class SepetView(AbonelikGerekli, View):
+    """Kullanıcının sepetini göster."""
+    template_name = "karsilastirma/sepet.html"
+
+    def get(self, request):
+        urunler = SepetUrun.objects.filter(kullanici=request.user)
+        toplam  = sum(u.toplam_fiyat() for u in urunler)
+        return render(request, self.template_name, {
+            "urunler": urunler,
+            "toplam":  toplam,
+        })
+
+
+@method_decorator(login_required(login_url='/'), name='dispatch')
+class SepetGuncelleView(View):
+    """AJAX POST — sepetteki ürünün miktarını güncelle veya sil."""
+
+    def post(self, request, urun_id):
+        urun = get_object_or_404(SepetUrun, pk=urun_id, kullanici=request.user)
+        try:
+            body   = json.loads(request.body)
+            miktar = int(body.get("miktar", 1))
+        except (ValueError, TypeError, json.JSONDecodeError):
+            return JsonResponse({"hata": "Geçersiz istek"}, status=400)
+
+        if miktar <= 0:
+            urun.delete()
+        else:
+            urun.miktar = miktar
+            urun.save(update_fields=["miktar"])
+
+        sepet_adet = SepetUrun.objects.filter(kullanici=request.user).count()
+        return JsonResponse({"ok": True, "sepet_adet": sepet_adet})
+
+
+@method_decorator(login_required(login_url='/'), name='dispatch')
+class SepetSilView(View):
+    """AJAX DELETE — sepetten tek ürün sil."""
+
+    def delete(self, request, urun_id):
+        urun = get_object_or_404(SepetUrun, pk=urun_id, kullanici=request.user)
+        urun.delete()
+        sepet_adet = SepetUrun.objects.filter(kullanici=request.user).count()
+        return JsonResponse({"ok": True, "sepet_adet": sepet_adet})
+
+
+def _siparis_maili_gonder(siparis):
+    """Yeni sipariş oluştuğunda info@meslas.com'a bildirim maili gönderir."""
+    from django.core.mail import EmailMessage
+    from django.conf import settings as conf
+
+    kullanici = siparis.kullanici
+    urunler   = siparis.urunler.all()
+
+    # ── Mail gövdesi ──────────────────────────────────────────────────────────
+    satir_ayrac = "-" * 60
+    urun_satirlari = []
+    for u in urunler:
+        urun_satirlari.append(
+            f"  {u.marka} {u.ebat}"
+            f"\n    Ürün   : {u.urun_adi}"
+            f"\n    Toptancı: {u.toptanci}"
+            f"\n    Mevsim : {u.mevsim or '—'}  |  DOT: {u.dot or '—'}"
+            f"\n    Fiyat  : {float(u.fiyat_ham):,.2f} ₺ (ham)  →  {float(u.fiyat):,.2f} ₺ (satış)"
+            f"\n    Adet   : {u.miktar}  |  Toplam: {float(u.toplam_fiyat()):,.2f} ₺"
+        )
+
+    icerik = (
+        f"YENİ SİPARİŞ — #{siparis.pk}\n"
+        f"{satir_ayrac}\n\n"
+        f"Kullanıcı : {kullanici.username}"
+        f"{' <' + kullanici.email + '>' if kullanici.email else ''}\n"
+        f"Tarih     : {siparis.olusturulma.strftime('%d.%m.%Y %H:%M')}\n\n"
+        f"{satir_ayrac}\n"
+        f"ÜRÜNLER\n"
+        f"{satir_ayrac}\n\n"
+        + "\n\n".join(urun_satirlari)
+        + f"\n\n{satir_ayrac}\n"
+        f"Ham Toplam  : {float(siparis.toplam_tutar_ham()):,.2f} ₺\n"
+        f"Satış Toplamı: {float(siparis.toplam_tutar()):,.2f} ₺\n"
+    )
+
+    if siparis.not_alani:
+        icerik += f"\n{satir_ayrac}\nMüşteri Notu: {siparis.not_alani}\n"
+
+    icerik += f"\n{satir_ayrac}\nPanel: https://meslas.com/admin-panel/siparisler/\n"
+
+    konu = f"[MesB2B] Yeni Sipariş #{siparis.pk} — {kullanici.username}"
+
+    msg = EmailMessage(
+        subject=konu,
+        body=icerik,
+        from_email=conf.DEFAULT_FROM_EMAIL,
+        to=["info@meslas.com"],
+    )
+    msg.send(fail_silently=False)
+
+
+@method_decorator(login_required(login_url='/'), name='dispatch')
+class SiparisGonderView(AbonelikGerekli, View):
+    """
+    POST — sepeti sipariş olarak kaydet, sepebi temizle.
+    Admin sonraki ekranda hangi toptancıdan hangi ürün gittiğini görür.
+    """
+
+    def post(self, request):
+        urunler = SepetUrun.objects.filter(kullanici=request.user)
+        if not urunler.exists():
+            return redirect("sepet")
+
+        kullanici_notu = request.POST.get("not_alani", "").strip()
+
+        siparis = Siparis.objects.create(
+            kullanici=request.user,
+            not_alani=kullanici_notu,
+        )
+
+        # Snapshot: her sepet ürününü sipariş satırına kopyala
+        # fiyat     = kullanıcıya gösterilen (%10 zammlı) fiyat
+        # fiyat_ham = toptancıdan gelen gerçek alış fiyatı (%10 geri alınır)
+        SiparisUrun.objects.bulk_create([
+            SiparisUrun(
+                siparis=siparis,
+                toptanci=u.toptanci,
+                urun_adi=u.urun_adi,
+                marka=u.marka,
+                ebat=u.ebat,
+                mevsim=u.mevsim,
+                dot=u.dot,
+                fiyat=u.fiyat,
+                fiyat_ham=round(float(u.fiyat) / 1.10, 2),
+                miktar=u.miktar,
+            )
+            for u in urunler
+        ])
+
+        # Sepeti temizle
+        urunler.delete()
+
+        # ── Sipariş bildirimi mail gönder ────────────────────────────────────
+        try:
+            _siparis_maili_gonder(siparis)
+        except Exception as e:
+            print(f"[SiparisGonder] Mail gönderilemedi: {e}")
+
+        return redirect("siparis_tesekkur", siparis_id=siparis.pk)
+
+
+@method_decorator(login_required(login_url='/'), name='dispatch')
+class SiparisTesekurView(View):
+    """Sipariş sonrası teşekkür / özet sayfası."""
+    template_name = "karsilastirma/siparis_tesekkur.html"
+
+    def get(self, request, siparis_id):
+        siparis = get_object_or_404(Siparis, pk=siparis_id, kullanici=request.user)
+        return render(request, self.template_name, {"siparis": siparis})
+
+
+@method_decorator(login_required(login_url='/'), name='dispatch')
+class SiparislerimView(AbonelikGerekli, View):
+    """Kullanıcının kendi sipariş geçmişi."""
+    template_name = "karsilastirma/siparislerim.html"
+
+    def get(self, request):
+        siparisler = Siparis.objects.filter(kullanici=request.user).prefetch_related("urunler")
+        return render(request, self.template_name, {"siparisler": siparisler})
+
+
+# ── Admin Sipariş Yönetimi ───────────────────────────────────────────────────
+
+@method_decorator(staff_member_required(login_url='giris'), name='dispatch')
+class AdminSiparislerView(View):
+    """Admin: tüm siparişleri listele."""
+    template_name = "karsilastirma/admin_siparisler.html"
+
+    def get(self, request):
+        durum_filtre = request.GET.get("durum", "")
+        siparisler = Siparis.objects.select_related("kullanici").prefetch_related("urunler")
+        if durum_filtre:
+            siparisler = siparisler.filter(durum=durum_filtre)
+        return render(request, self.template_name, {
+            "siparisler":   siparisler,
+            "durum_filtre": durum_filtre,
+            "durum_secenekleri": Siparis.DURUM_CHOICES,
+        })
+
+
+@method_decorator(staff_member_required(login_url='giris'), name='dispatch')
+class AdminSiparisDurumView(View):
+    """Admin: sipariş durumunu güncelle + not ekle."""
+
+    def post(self, request, siparis_id):
+        siparis    = get_object_or_404(Siparis, pk=siparis_id)
+        yeni_durum = request.POST.get("durum", "").strip()
+        admin_notu = request.POST.get("admin_notu", "").strip()
+
+        if yeni_durum in dict(Siparis.DURUM_CHOICES):
+            siparis.durum = yeni_durum
+        if admin_notu:
+            siparis.admin_notu = admin_notu
+        siparis.save(update_fields=["durum", "admin_notu", "guncelleme"])
+
+        return redirect("admin_siparisler")
+
+
+@method_decorator(login_required(login_url='/'), name='dispatch')
+class SepetAdetView(View):
+    """AJAX GET — navbar'daki sepet rozetini güncel tutmak için."""
+
+    def get(self, request):
+        adet = SepetUrun.objects.filter(kullanici=request.user).count()
+        return JsonResponse({"adet": adet})

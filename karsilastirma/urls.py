@@ -3,7 +3,11 @@ from .views import (AramaView, SonuclarView, GirisView, CikisView,
                     AbonelikYonetimView, AbonelikKaydetView,
                     KullaniciEkleView, OdemeGecmisiView, OdemeEkleView,
                     NotlarView, NotEkleView, NotSilView, UyelikTalepView,
-                    IskontoYonetimView)
+                    IskontoYonetimView,
+                    # Sepet & Sipariş
+                    SepeteEkleView, SepetView, SepetGuncelleView, SepetSilView,
+                    SiparisGonderView, SiparisTesekurView, SiparislerimView,
+                    AdminSiparislerView, AdminSiparisDurumView, SepetAdetView)
 
 urlpatterns = [
     path("",                              AramaView.as_view(),           name="arama"),
@@ -23,4 +27,16 @@ urlpatterns = [
     path("uyelik-talep/",                 UyelikTalepView.as_view(),     name="uyelik_talep"),
     # İskonto yönetimi
     path("iskonto/",                      IskontoYonetimView.as_view(),  name="iskonto_yonetim"),
+    # ── Sepet & Sipariş ──────────────────────────────────────────────────────
+    path("sepet/",                        SepetView.as_view(),           name="sepet"),
+    path("sepet/ekle/",                   SepeteEkleView.as_view(),      name="sepete_ekle"),
+    path("sepet/adet/",                   SepetAdetView.as_view(),       name="sepet_adet"),
+    path("sepet/<int:urun_id>/guncelle/", SepetGuncelleView.as_view(),   name="sepet_guncelle"),
+    path("sepet/<int:urun_id>/sil/",      SepetSilView.as_view(),        name="sepet_sil"),
+    path("siparis/gonder/",               SiparisGonderView.as_view(),   name="siparis_gonder"),
+    path("siparis/<int:siparis_id>/tesekkur/", SiparisTesekurView.as_view(), name="siparis_tesekkur"),
+    path("siparislerim/",                 SiparislerimView.as_view(),    name="siparislerim"),
+    # ── Admin Sipariş ─────────────────────────────────────────────────────────
+    path("admin-panel/siparisler/",              AdminSiparislerView.as_view(),  name="admin_siparisler"),
+    path("admin-panel/siparisler/<int:siparis_id>/durum/", AdminSiparisDurumView.as_view(), name="admin_siparis_durum"),
 ]

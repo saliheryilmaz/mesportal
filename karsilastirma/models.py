@@ -3,6 +3,7 @@ from datetime import timedelta
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+import json
 
 
 class AramaGecmisi(models.Model):
@@ -130,3 +131,116 @@ class ToptanciIskonto(models.Model):
     def __str__(self):
         kim = self.kullanici.username if self.kullanici else "global"
         return f"{kim} / {self.toptanci_adi}: {self.iskonto_metni[:40]}"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SİPARİŞ SİSTEMİ
+# ─────────────────────────────────────────────────────────────────────────────
+
+class SepetUrun(models.Model):
+    """
+    Kullanıcının aktif sepetindeki her bir ürün satırı.
+    Her kullanıcının sepetinde aynı (toptanci+urun_adi+ebat) sadece bir kez olabilir;
+    miktar arttırılabilir.
+    """
+    kullanici   = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sepet")
+    toptanci    = models.CharField(max_length=80)
+    urun_adi    = models.CharField(max_length=255)
+    marka       = models.CharField(max_length=100, blank=True)
+    ebat        = models.CharField(max_length=30)
+    mevsim      = models.CharField(max_length=20, blank=True)
+    dot         = models.CharField(max_length=20, blank=True)
+    fiyat       = models.DecimalField(max_digits=10, decimal_places=2)
+    miktar      = models.PositiveSmallIntegerField(default=1)
+    eklenme     = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name        = "Sepet Ürünü"
+        verbose_name_plural = "Sepet Ürünleri"
+        ordering            = ["-eklenme"]
+
+    def toplam_fiyat(self):
+        return self.fiyat * self.miktar
+
+    def __str__(self):
+        return f"{self.kullanici.username} | {self.marka} {self.ebat} @ {self.toptanci} x{self.miktar}"
+
+
+class Siparis(models.Model):
+    """
+    Kullanıcının "Sipariş Gönder" butonuna bastığında oluşan sipariş kaydı.
+    Admin bu kaydı görerek temin işlemini yapar.
+    """
+    DURUM_CHOICES = [
+        ("bekliyor",    "Bekliyor"),
+        ("hazirlaniyor","Hazırlanıyor"),
+        ("tamamlandi",  "Tamamlandı"),
+        ("iptal",       "İptal"),
+    ]
+
+    kullanici   = models.ForeignKey(User, on_delete=models.CASCADE, related_name="siparisler")
+    durum       = models.CharField(max_length=20, choices=DURUM_CHOICES, default="bekliyor")
+    not_alani   = models.TextField(blank=True, help_text="Kullanıcı notu")
+    admin_notu  = models.TextField(blank=True, help_text="Admin iç notu")
+    olusturulma = models.DateTimeField(auto_now_add=True)
+    guncelleme  = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name        = "Sipariş"
+        verbose_name_plural = "Siparişler"
+        ordering            = ["-olusturulma"]
+
+    def toplam_tutar(self):
+        return sum(u.toplam_fiyat() for u in self.urunler.all())
+
+    def toplam_tutar_ham(self):
+        return sum(u.toplam_fiyat_ham() for u in self.urunler.all())
+
+    def toplam_kar(self):
+        return sum(u.toplam_kar() for u in self.urunler.all())
+
+    def urun_sayisi(self):
+        return sum(u.miktar for u in self.urunler.all())
+
+    def __str__(self):
+        return f"#{self.pk} — {self.kullanici.username} ({self.get_durum_display()}) {self.olusturulma:%d.%m.%Y %H:%M}"
+
+
+class SiparisUrun(models.Model):
+    """
+    Siparişe bağlı her bir ürün satırı (snapshot — sipariş anındaki fiyat korunur).
+    fiyat      : kullanıcıya gösterilen fiyat (%10 zam dahil)
+    fiyat_ham  : toptancıdan gelen gerçek alış fiyatı (admin karşılaştırması için)
+    """
+    siparis     = models.ForeignKey(Siparis, on_delete=models.CASCADE, related_name="urunler")
+    toptanci    = models.CharField(max_length=80)
+    urun_adi    = models.CharField(max_length=255)
+    marka       = models.CharField(max_length=100, blank=True)
+    ebat        = models.CharField(max_length=30)
+    mevsim      = models.CharField(max_length=20, blank=True)
+    dot         = models.CharField(max_length=20, blank=True)
+    fiyat       = models.DecimalField(max_digits=10, decimal_places=2,
+                                      help_text="Kullanıcıya gösterilen fiyat (%10 zam dahil)")
+    fiyat_ham   = models.DecimalField(max_digits=10, decimal_places=2, default=0,
+                                      help_text="Toptancı ham alış fiyatı")
+    miktar      = models.PositiveSmallIntegerField(default=1)
+
+    class Meta:
+        verbose_name        = "Sipariş Ürünü"
+        verbose_name_plural = "Sipariş Ürünleri"
+
+    def toplam_fiyat(self):
+        return self.fiyat * self.miktar
+
+    def toplam_fiyat_ham(self):
+        return self.fiyat_ham * self.miktar
+
+    def kar(self):
+        """Birim başına kâr (zam - ham)."""
+        return self.fiyat - self.fiyat_ham
+
+    def toplam_kar(self):
+        return self.kar() * self.miktar
+
+    def __str__(self):
+        return f"{self.marka} {self.ebat} @ {self.toptanci} x{self.miktar}"
