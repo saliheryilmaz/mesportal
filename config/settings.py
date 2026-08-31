@@ -8,6 +8,7 @@ load_dotenv(BASE_DIR / ".env")
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-change-me')
 DEBUG = True
 ALLOWED_HOSTS = ['*']
+CSRF_TRUSTED_ORIGINS = ['https://mesportal.com.tr', 'https://www.mesportal.com.tr']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
